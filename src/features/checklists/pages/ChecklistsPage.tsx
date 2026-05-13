@@ -75,7 +75,6 @@ export function ChecklistsPage() {
 
         <ChecklistTemplatesTable
           templates={templates}
-          isPending={false}
           togglingTemplateId={togglingTemplateId}
           onEdit={onOpenEdit}
           onToggleActive={onToggleActive}
