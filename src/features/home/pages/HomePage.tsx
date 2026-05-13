@@ -41,7 +41,7 @@ export function HomePage() {
     }
     return mapActionDashboardToHome(
       dashboardQuery.data,
-      recentQuery.data.items,
+      recentQuery.data.items ?? [],
     );
   }, [dashboardQuery.data, recentQuery.data]);
 

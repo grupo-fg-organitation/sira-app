@@ -36,17 +36,22 @@ function countByStatus(
   statuses: readonly SiraActionStatus[],
 ): number {
   const set = new Set(statuses);
-  return dashboard.byStatus
+  return (dashboard.byStatus ?? [])
     .filter(row => set.has(row.status))
     .reduce((acc, row) => acc + row.count, 0);
 }
 
 export function mapActionDashboardToHome(
   dashboard: ActionDashboardMetricsApi,
-  recentItems: ActionSummaryApi[],
+  recentItems: ActionSummaryApi[] | undefined,
 ): HomeDashboardFromApi {
+  const byArea = dashboard.byArea ?? [];
+  const byStatus = dashboard.byStatus ?? [];
+  const monthlyTrend = dashboard.monthlyTrend ?? [];
+  const recientes = recentItems ?? [];
+
   const kpi: KpiSummary = {
-    total: dashboard.total,
+    total: dashboard.total ?? 0,
     abiertas: countByStatus(dashboard, ['OPEN', 'REOPENED', 'PENDING']),
     cerradas: countByStatus(dashboard, ['CLOSED']),
     expiradas: countByStatus(dashboard, ['EXPIRED']),
@@ -54,12 +59,12 @@ export function mapActionDashboardToHome(
     pendientesAceptacion: countByStatus(dashboard, ['PENDING_ACCEPTANCE']),
   };
 
-  const accionesPorArea: AccionPorAreaDatum[] = dashboard.byArea.map(a => ({
+  const accionesPorArea: AccionPorAreaDatum[] = byArea.map(a => ({
     area: a.areaName,
     cantidad: a.count,
   }));
 
-  const distribucionEstatus: DistribucionEstatusDatum[] = dashboard.byStatus
+  const distribucionEstatus: DistribucionEstatusDatum[] = byStatus
     .filter(row => row.count > 0)
     .map(row => ({
       estatus: getActionStatusLabel(row.status),
@@ -67,7 +72,7 @@ export function mapActionDashboardToHome(
       color: STATUS_CHART_COLORS[row.status] ?? '#64748B',
     }));
 
-  const accionesRecientes: DashboardActionRow[] = recentItems.map(a => ({
+  const accionesRecientes: DashboardActionRow[] = recientes.map(a => ({
     id: String(a.id),
     folio: a.folio,
     area: a.areaName,
@@ -82,7 +87,7 @@ export function mapActionDashboardToHome(
     kpi,
     accionesPorArea,
     distribucionEstatus,
-    tendenciaMensual: dashboard.monthlyTrend.map(row => ({
+    tendenciaMensual: monthlyTrend.map(row => ({
       mes: row.mes,
       creadas: row.creadas,
       cerradas: row.cerradas,
